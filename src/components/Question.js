@@ -1,82 +1,135 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
-export default class Questions extends Component {
+import React, { Component } from 'react';
+import _ from 'lodash';
+
+class Quiz extends Component {
   constructor(props) {
-    super();
+    super(props);
+    this.state = {
+      currentQuestion: 0,
+      answers: null,
+      correctAnswer: null,
+    };
   }
+
+  componentDidMount() {
+    let arrOfIncorrect = [
+      ...this.props.questions[this.state.currentQuestion].incorrect_answers,
+    ];
+
+    let correctAns =
+      this.props.questions[this.state.currentQuestion].correct_answer;
+
+    let arrOfAllAns = _.uniq(_.concat(arrOfIncorrect, correctAns));
+
+    this.setState({
+      answers: arrOfAllAns,
+      correctAnswer: correctAns,
+    });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.currentQuestion !== this.state.currentQuestion) {
+      let arrOfIncorrect = [
+        ...this.props.questions[this.state.currentQuestion].incorrect_answers,
+      ];
+
+      let correctAns =
+        this.props.questions[this.state.currentQuestion].correct_answer;
+
+      let arrOfAllAns = _.uniq(_.concat(arrOfIncorrect, correctAns));
+
+      this.setState({
+        answers: arrOfAllAns,
+        correctAnswer: correctAns,
+      });
+    }
+  }
+
+  handleNextQuestion = () => {
+    if (!this.props.allAnswers[this.state.currentQuestion]) {
+      alert('You must select answer of current question.');
+    } else {
+      this.setState((prevState) => {
+        return {
+          currentQuestion: prevState.currentQuestion + 1,
+        };
+      });
+    }
+  };
+
   render() {
-    let {
-      questions,
-      step,
-      selectedAnswer,
-      nextQuestion,
-      selectOption,
-    } = this.props;
-    let index = step;
+    let questionToDisplay = this.props.questions[this.state.currentQuestion];
     return (
-      <div>
-        {questions != null ? (
-          <Singlequestion
-            singleQuestion={questions.results[index]}
-            nextQuestion={nextQuestion}
-            step={step}
-            selectOption={selectOption}
-            selectedAnswer={selectedAnswer}
-          />
+      <div className='quiz'>
+        <h2>
+          Question No. - <span>{this.state.currentQuestion + 1}</span>
+        </h2>
+        <h2>
+          <span>Difficulty Level : {questionToDisplay.difficulty}</span>
+        </h2>
+        <h3>
+          Question:- <span>{questionToDisplay.question}</span>
+        </h3>
+
+        {this.state.answers ? (
+          <>
+            <ul className='ans'>
+              {this.state.answers.map((answer, i) => {
+                return (
+                  <li
+                    onClick={(event) => {
+                      this.props.handleAnswerSelect(
+                        answer,
+                        this.state.currentQuestion
+                      );
+                    }}
+                    key={i}
+                    className={
+                      this.props.allAnswers[this.state.currentQuestion] ===
+                      answer
+                        ? 'green'
+                        : 'purple'
+                    }
+                  >
+                    {i + 1} :- {'   ' + answer}
+                  </li>
+                );
+              })}
+            </ul>
+          </>
         ) : (
-          " loading content wait .."
+          ''
         )}
-        <div className="result-button">
-          {step === 9 && selectedAnswer ? (
-            <Link to="/results" className="next-button">
-              get result
-            </Link>
-          ) : (
-            ""
-          )}
-        </div>
+
+        {this.state.currentQuestion > 8 ? (
+          <div>
+            <button
+              className='next'
+              onClick={(event) => {
+                this.props.handleSubmit(
+                  this.props.questions,
+                  this.props.allAnswers
+                );
+              }}
+            >
+              Submit
+            </button>
+          </div>
+        ) : (
+          <div>
+            <button
+              className='next'
+              onClick={(event) => {
+                this.handleNextQuestion();
+              }}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     );
   }
 }
 
-function Singlequestion(props) {
-  let { singleQuestion, nextQuestion, step, selectOption, selectedAnswer } =
-    props;
-  step = step + 1;
-  let allAnswers = [...singleQuestion.incorrect_answers];
-  allAnswers.push(singleQuestion.correct_answer);
-  return (
-    <>
-      <div className="question-container">
-        <div className="col question-wrapper">
-          <h1 className="text-center"> Quiz website </h1>
-          <h2 className="question-index">
-            Question <span>{step}/10</span>
-          </h2>
-          <progress className="progress-bar" max="10" value={step}></progress>
-          <h2 className="question-title">{singleQuestion.question}</h2>
-          <div>
-            {allAnswers.map((answer, index) => {
-              return (
-                <p
-                  key={index}
-                  onClick={selectOption}
-                  className={
-                    selectedAnswer === answer ? "selected-question" : ""
-                  }
-                  value={answer}
-                >
-                  {answer}
-                </p>
-              );
-            })}
-          </div>
-        </div>
-        <button className="next-button" onClick={nextQuestion}>
-          next
-        </button>
-      </div>
-    </>
-  );
-}
+export default Quiz;

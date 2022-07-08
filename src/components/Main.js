@@ -1,68 +1,46 @@
-import React, { Component } from "react";
-import { Switch, Route } from "react-router-dom";
-import Results from "./Results";
-import Questions from "./Question";
-export default class Main extends Component {
-  constructor() {
-    super();
-    this.state = {
-      step: 0,
-      questions: null,
-      answers: [],
-      userLevel: "easy",
-      selectedAnswer: "",
-    };
+import React, { Component } from 'react';
+import { BrowserRouter, Route } from 'react-router-dom';
+import Category from './Category';
+import Header from './Header';
+import Levels from './Levels';
+import QuizHome from './QuizHome';
+
+class Dashboard extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { category: null, level: null };
   }
 
-  componentDidMount() {
-    fetch(
-      `https://opentdb.com/api.php?amount=10&category=10&difficulty=${this.state.userLevel}`
-    )
-      .then((res) => res.json())
-      .then((questions) => {
-        console.log(questions);
-        this.setState({
-          questions: questions,
-        });
-      });
-  }
-
-  nextQuestion = () => {
-    let step = this.state.step;
-    if (step <= 8) {
-      this.setState({
-        step: step + 1,
-      });
-    }
+  handleAddCategory = (event, category) => {
+    console.log('clicked');
+    this.setState({ category: category });
   };
 
-  selectOption = ({ target }) => {
-    let value = target.innerText;
-    let allanswers = [...this.state.answers];
-    allanswers.push(value);
-    this.setState({
-      selectedAnswer: value,
-      answers: allanswers,
-    });
+  handleDifficulty = (event, level) => {
+    this.setState({ level: level });
   };
+
   render() {
-    let { questions, step, answers, selectedAnswer } = this.state;
     return (
-      <Switch>
-        <Route path="/" exact>
-          <Questions
-            questions={questions}
-            step={step}
-            answers={answers}
-            selectedAnswer={selectedAnswer}
-            nextQuestion={this.nextQuestion}
-            selectOption={this.selectOption}
-          />
-        </Route>
-        <Route path="/results" exact>
-          <Results questions={this.state.questions} answers={answers} />
-        </Route>
-      </Switch>
+      <>
+        <Header />
+        <BrowserRouter>
+          <Route path='/' exact>
+            <Category
+              category={this.state.category}
+              handleAddCategory={this.handleAddCategory}
+            />
+            <Levels
+              level={this.state.level}
+              category={this.state.category}
+              handleDifficulty={this.handleDifficulty}
+            />
+          </Route>
+          <Route path='/quiz/:category/:level' component={QuizHome} />
+        </BrowserRouter>
+      </>
     );
   }
 }
+
+export default Dashboard;

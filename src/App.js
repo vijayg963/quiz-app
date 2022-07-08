@@ -1,6 +1,6 @@
 import React from 'react';
 import Main from './components/Main';
-// import Questions from './Questions';
+import './index.css';
 
 function App() {
   return <Main />;
