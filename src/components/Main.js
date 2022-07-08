@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Switch, Route } from "react-router-dom";
 import Results from "./Results";
-import Questions from "./Questions";
+import Questions from "./Question";
 export default class Main extends Component {
   constructor() {
     super();
